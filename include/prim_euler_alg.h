@@ -43,8 +43,7 @@ namespace croutes {
         std::vector<uint32_t*> p(size, nullptr);
         std::vector<bool> active(size, true);
 
-        auto zero = 0;
-        d[first_node] = &zero;
+        d[first_node] = new T(0);
 
         auto less = [&d](uint32_t lhs, uint32_t rhs) {
             if (d[lhs] == nullptr && d[rhs] == nullptr) {
@@ -88,6 +87,13 @@ namespace croutes {
                 }
             }
         }
+
+        for (uint32_t u = 0; u < size; ++u) {
+            delete d[u];
+            delete p[u];
+        }
+
+
 
 
         std::stack<uint32_t> back_stack;
