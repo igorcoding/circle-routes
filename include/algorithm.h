@@ -23,7 +23,7 @@ namespace croutes {
 
     template <typename T>
     algorithm<T>::algorithm() {
-
+        static_assert(!std::is_integral<T>::value, "Integral types are not allowed");
     }
 
     template <typename T>

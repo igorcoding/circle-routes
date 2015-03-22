@@ -17,14 +17,16 @@ int main() {
     std::stringstream ss;
     ss << s;
 
-    auto d = croutes::read_data<int>(ss);
+    auto d = croutes::read_data<double>(ss);
 
-    croutes::prim_euler_alg<int> alg;
+    croutes::little_alg<double> alg;
     auto a = alg.compute(d, 4);
 
-    for (const auto& b : a->bonds()) {
-        std::cout << *b << std::endl;
+    for (const auto& b : a->bundles()) {
+        for (const auto& bond : *b) {
+            std::cout << *bond << std::endl;
+        }
+        std::cout << "Length = " << a->total_distance(b) << std::endl << std::endl;
     }
-    std::cout << "Length = " << a->total_distance() << std::endl;
     return 0;
 }

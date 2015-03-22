@@ -54,9 +54,16 @@ namespace croutes {
     /*************** ndata ***************/
 
     template <typename T>
+    class ndata;
+
+    template <typename T>
+    using ndata_ptr = std::shared_ptr<ndata<T>>;
+
+    template <typename T>
     class ndata {
     public:
         ndata(size_t nodes_count);
+        ndata(const ndata<T>& rhs);
         ~ndata();
 
         size_t nodes_count() const { return _nodes_count; }
@@ -70,8 +77,11 @@ namespace croutes {
 
         void add_node(int32_t from_node, int32_t to_node, T distance);
 
+        ndata_ptr<T> copy() const;
+
     private:
         void bounds_check(int32_t from_node, int32_t to_node) const;
+        ndata<T>& operator= (const ndata<T>& rhs) = delete;
 
     private:
         size_t _nodes_count;
@@ -79,21 +89,38 @@ namespace croutes {
         std::vector<std::vector<net_bond<T>*>*>* _matrix;
     };
 
-    template <typename T>
-    using ndata_ptr = std::shared_ptr<ndata<T>>;
-
 
     template <typename T>
     ndata<T>::ndata(size_t nodes_count)
         : _nodes_count(nodes_count),
           _matrix(new std::vector<std::vector<net_bond<T>*>*>()),
-          _inf(std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity() : std::numeric_limits<T>::max()) {
+          _inf(std::numeric_limits<T>::infinity()) {
+        static_assert(std::numeric_limits<T>::has_infinity, "No infinity value for this type");
+
         _matrix->reserve(_nodes_count);
         for (int32_t i = 0; i < _nodes_count; ++i) {
             std::vector<net_bond<T>*>* row = new std::vector<net_bond<T>*>();
             row->reserve(_nodes_count);
             for (int32_t j = 0; j < _nodes_count; ++j) {
                 row->push_back(new net_bond<T>(i, j, T()));
+            }
+            _matrix->push_back(row);
+        }
+    }
+
+    template <typename T>
+    ndata<T>::ndata(const ndata<T>& rhs)
+            : _nodes_count(rhs._nodes_count),
+              _matrix(new std::vector<std::vector<net_bond<T>*>*>()),
+              _inf(std::numeric_limits<T>::infinity()) {
+        static_assert(std::numeric_limits<T>::has_infinity, "No infinity value for this type");
+
+        _matrix->reserve(_nodes_count);
+        for (int32_t i = 0; i < _nodes_count; ++i) {
+            std::vector<net_bond<T>*>* row = new std::vector<net_bond<T>*>();
+            row->reserve(_nodes_count);
+            for (int32_t j = 0; j < _nodes_count; ++j) {
+                row->push_back(new net_bond<T>(i, j, rhs.at(i, j).distance()));
             }
             _matrix->push_back(row);
         }
@@ -154,6 +181,11 @@ namespace croutes {
         }
     }
 
+    template <typename T> inline
+    ndata_ptr<T> ndata<T>::copy() const {
+        return std::make_shared<ndata<T>>(*this);
+    }
+
 
 
 
@@ -161,17 +193,17 @@ namespace croutes {
     /*************** reading functions ***************/
 
     template <typename T>
-    std::shared_ptr<ndata<T>> read_data() {
+    ndata_ptr<T> read_data() {
         return read_data<T>(std::cin);
     }
 
     template <typename T>
-    std::shared_ptr<ndata<T>> read_data(const std::string& filename) {
+    ndata_ptr<T> read_data(const std::string& filename) {
         std::fstream fs;
         fs.open(filename, std::fstream::in);
         if (fs.is_open()) {
             try {
-                std::shared_ptr<ndata<T>> d = read_data<T>(fs);
+                auto d = read_data<T>(fs);
                 fs.close();
                 return d;
             } catch (std::exception& e) {
@@ -184,12 +216,12 @@ namespace croutes {
     }
 
     template <typename T>
-    std::shared_ptr<ndata<T>> read_data(std::istream& is) {
+    ndata_ptr<T> read_data(std::istream& is) {
         size_t nodes_count;
         if (is.good()) {
             is >> nodes_count;
 
-            std::shared_ptr<ndata<T>> d = std::make_shared<ndata<T>>(nodes_count);
+            auto d = std::make_shared<ndata<T>>(nodes_count);
             for (size_t i = 0; i < nodes_count; ++i) {
                 for (size_t j = 0; j < nodes_count; ++j) {
                     T dist;
@@ -202,8 +234,6 @@ namespace croutes {
         }
         throw std::runtime_error("Stream is bad");
     }
-
-
 }
 
 #endif //_CIRCLE_ROUTES_NDATA_H_
