@@ -18,7 +18,7 @@ namespace croutes {
         prim_euler_alg();
 
     private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data, uint32_t first_node);
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node);
     private:
 
     };
@@ -29,75 +29,66 @@ namespace croutes {
     }
 
     template <typename T> inline
-    answer_ptr<T> prim_euler_alg<T>::_compute(ndata_ptr<T> data, uint32_t first_node) {
+    answer_ptr<T> prim_euler_alg<T>::_compute(ndata_ptr<T> data, int32_t first_node) {
         auto size = data->nodes_count();
         typedef const net_bond<T>* bond_t;
         std::vector<bond_t> min_span_tree;
 
-        std::vector<uint32_t> nodes(size);
-        for (uint32_t i = 0; i < size; ++i) {
-            nodes[i] = i;
-        }
+        std::vector<T> d(size);
+        std::vector<bool> d_inf(size, true);
 
-        std::vector<T*> d(size, nullptr);
-        std::vector<uint32_t*> p(size, nullptr);
+        std::vector<int32_t> p(size, -1);
+
         std::vector<bool> active(size, true);
 
-        d[first_node] = new T(0);
+        d[first_node] = 0;
+        d_inf[first_node] = false;
 
-        auto less = [&d](uint32_t lhs, uint32_t rhs) {
-            if (d[lhs] == nullptr && d[rhs] == nullptr) {
+        auto less = [&d, &d_inf](int32_t lhs, int32_t rhs) {
+            if (d_inf[lhs] == true && d_inf[rhs] == true) {
                 return false;
             }
-            if (d[lhs] == nullptr) {
+            if (d_inf[lhs] == true) {
                 return false;
             }
-            if (d[rhs] == nullptr) {
+            if (d_inf[rhs] == true) {
                 return true;
             }
-            return *d[lhs] < *d[rhs];
+            return d[lhs] < d[rhs];
         };
 
-        for (uint32_t i = 0; i < size; ++i) {
-            uint32_t* v = nullptr;
-            for (uint32_t j = 0; j < size; ++j) {
-                if (active[j] && (v == nullptr || less(j, *v))) {
-                    v = &nodes[j];
+        for (int32_t i = 0; i < size; ++i) {
+            int32_t v = -1;
+            for (int32_t j = 0; j < size; ++j) {
+                if (active[j] && (v == -1 || less(j, v))) {
+                    v = j;
                 }
             }
 
-            if (v == nullptr) {
+            if (v == -1) {
                 std::cout << "null\n";
             } else {
-                active[*v] = false;
-                if (p[*v] != nullptr) {
-//                    std::cout << *v << " " << *p[*v] << std::endl;
-                    min_span_tree.push_back(&data->at(*p[*v], *v));
+                active[v] = false;
+                if (p[v] != -1) {
+                    min_span_tree.push_back(&data->at(p[v], v));
                 }
 
-                for (uint32_t u = 0; u < size; ++u) {
-                    auto n = data->at(*v, u);
+                for (int32_t u = 0; u < size; ++u) {
+                    auto n = data->at(v, u);
 
-                    if (d[u] == nullptr || n.distance() < *d[u]) {
-                        delete d[u];
-                        delete p[u];
-                        d[u] = new T(n.distance());
-                        p[u] = new uint32_t(*v);
+                    if (d_inf[u] == true || n.distance() < d[u]) {
+                        d[u] = n.distance();
+                        d_inf[u] = false;
+
+                        p[u] = v;
                     }
                 }
             }
         }
 
-        for (uint32_t u = 0; u < size; ++u) {
-            delete d[u];
-            delete p[u];
-        }
 
-
-
-
-        std::stack<uint32_t> back_stack;
-        std::vector<uint32_t> result;
+        std::stack<int32_t> back_stack;
+        std::vector<int32_t> result;
 
         result.push_back(min_span_tree[0]->from());
         result.push_back(min_span_tree[0]->to());
@@ -124,27 +115,19 @@ namespace croutes {
             }
         }
 
-        active.clear();
-        active.resize(size, false);
 
-        std::vector<uint32_t> route;
+        answer_ptr<T> ans = std::make_shared<answer<T>>();
 
-        for (size_t i = 0; i < result.size() - 1; ++i) {
+        int32_t lhs = result[0];
+        for (size_t i = 1; i < result.size() - 1; ++i) {
             auto r = result[i];
 
             if (!active[r]) {
-                route.push_back(r);
+                ans->add_bond(&data->at(lhs, r));
+                lhs = r;
                 active[r] = true;
             }
         }
-        route.push_back(result[result.size() - 1]);
-
-
-        answer_ptr<T> ans = std::make_shared<answer<T>>();
-        for (size_t i = 0; i < route.size() - 1; ++i) {
-            ans->add_bond(&data->at(route[i], route[i+1]));
-        }
-
 
         return ans;
     }

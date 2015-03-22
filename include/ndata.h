@@ -17,7 +17,7 @@ namespace croutes {
 
     class data_inconsistent : public std::exception {
     public:
-        data_inconsistent(uint32_t from_node, uint32_t to_node) :
+        data_inconsistent(int32_t from_node, int32_t to_node) :
                 _msg("Data is inconsistent in (" + std::to_string(from_node) + ", " + std::to_string(to_node) + ")")
         { }
 
@@ -55,24 +55,24 @@ namespace croutes {
     template <typename T>
     class ndata {
     public:
-        ndata(uint32_t nodes_count);
+        ndata(size_t nodes_count);
         ~ndata();
 
-        uint32_t nodes_count() const { return _nodes_count; }
+        size_t nodes_count() const { return _nodes_count; }
 
-        net_bond<T>& at(uint32_t from_node, uint32_t to_node);
-        const net_bond<T>& at(uint32_t from_node, uint32_t to_node) const;
+        net_bond<T>& at(int32_t from_node, int32_t to_node);
+        const net_bond<T>& at(int32_t from_node, int32_t to_node) const;
 
-        net_bond<T>& operator() (uint32_t from_node, uint32_t to_node);
-        const net_bond<T>& operator() (uint32_t from_node, uint32_t to_node) const;
+        net_bond<T>& operator() (int32_t from_node, int32_t to_node);
+        const net_bond<T>& operator() (int32_t from_node, int32_t to_node) const;
 
-        void add_node(uint32_t from_node, uint32_t to_node, T distance);
-
-    private:
-        void bounds_check(uint32_t from_node, uint32_t to_node) const;
+        void add_node(int32_t from_node, int32_t to_node, T distance);
 
     private:
-        uint32_t _nodes_count;
+        void bounds_check(int32_t from_node, int32_t to_node) const;
+
+    private:
+        size_t _nodes_count;
         std::vector<std::vector<net_bond<T>*>*>* _matrix;
     };
 
@@ -81,14 +81,14 @@ namespace croutes {
 
 
     template <typename T>
-    ndata<T>::ndata(uint32_t nodes_count)
+    ndata<T>::ndata(size_t nodes_count)
         : _nodes_count(nodes_count),
           _matrix(new std::vector<std::vector<net_bond<T>*>*>()) {
         _matrix->reserve(_nodes_count);
-        for (uint32_t i = 0; i < _nodes_count; ++i) {
+        for (int32_t i = 0; i < _nodes_count; ++i) {
             std::vector<net_bond<T>*>* row = new std::vector<net_bond<T>*>();
             row->reserve(_nodes_count);
-            for (uint32_t j = 0; j < _nodes_count; ++j) {
+            for (int32_t j = 0; j < _nodes_count; ++j) {
                 row->push_back(new net_bond<T>(i, j, T()));
             }
             _matrix->push_back(row);
@@ -97,9 +97,9 @@ namespace croutes {
 
     template <typename T>
     ndata<T>::~ndata() {
-        for (uint32_t i = 0; i < _matrix->size(); ++i) {
+        for (size_t i = 0; i < _matrix->size(); ++i) {
             auto s = (*_matrix)[i]->size();
-            for (uint32_t j = 0; j < s; ++j) {
+            for (size_t j = 0; j < s; ++j) {
                 delete (*(*_matrix)[i])[j];
             }
             delete (*_matrix)[i];
@@ -108,29 +108,29 @@ namespace croutes {
     }
 
     template <typename T> inline
-    net_bond<T>& ndata<T>::at(uint32_t from_node, uint32_t to_node) {
+    net_bond<T>& ndata<T>::at(int32_t from_node, int32_t to_node) {
         return *((*((*_matrix)[from_node]))[to_node]);
     }
 
     template <typename T> inline
-    const net_bond<T>& ndata<T>::at(uint32_t from_node, uint32_t to_node) const {
+    const net_bond<T>& ndata<T>::at(int32_t from_node, int32_t to_node) const {
         return *((*((*_matrix)[from_node]))[to_node]);
     }
 
     template <typename T> inline
-    net_bond<T>& ndata<T>::operator() (uint32_t from_node, uint32_t to_node) {
+    net_bond<T>& ndata<T>::operator() (int32_t from_node, int32_t to_node) {
         bounds_check(from_node, to_node);
         return at(from_node, to_node);
     }
 
     template <typename T> inline
-    const net_bond<T>& ndata<T>::operator() (uint32_t from_node, uint32_t to_node) const {
+    const net_bond<T>& ndata<T>::operator() (int32_t from_node, int32_t to_node) const {
         bounds_check(from_node, to_node);
         return at(from_node, to_node);
     }
 
     template <typename T> inline
-    void ndata<T>::add_node(uint32_t from_node, uint32_t to_node, T distance) {
+    void ndata<T>::add_node(int32_t from_node, int32_t to_node, T distance) {
         bounds_check(from_node, to_node);
 
         if (from_node > to_node) {
@@ -143,8 +143,9 @@ namespace croutes {
     }
 
     template <typename T> inline
-    void ndata<T>::bounds_check(uint32_t from_node, uint32_t to_node) const {
-        if (from_node >= _nodes_count && to_node >= _nodes_count) {
+    void ndata<T>::bounds_check(int32_t from_node, int32_t to_node) const {
+        if (from_node < 0 || from_node >= _nodes_count ||
+                to_node < 0 || to_node >= _nodes_count) {
             throw std::out_of_range("Args are out of range");
         }
     }
@@ -180,16 +181,16 @@ namespace croutes {
 
     template <typename T>
     std::shared_ptr<ndata<T>> read_data(std::istream& is) {
-        uint32_t nodes_count;
+        size_t nodes_count;
         if (is.good()) {
             is >> nodes_count;
 
             std::shared_ptr<ndata<T>> d = std::make_shared<ndata<T>>(nodes_count);
-            for (uint32_t i = 0; i < nodes_count; ++i) {
-                for (uint32_t j = 0; j < nodes_count; ++j) {
+            for (size_t i = 0; i < nodes_count; ++i) {
+                for (size_t j = 0; j < nodes_count; ++j) {
                     T dist;
                     is >> dist;
-                    d->add_node(i, j, dist);
+                    d->add_node((int32_t) i, (int32_t) j, dist);
                 }
             }
 

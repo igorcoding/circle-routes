@@ -13,7 +13,7 @@ namespace croutes {
         nn_alg();
 
     private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data, uint32_t first_node);
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node);
     };
 
 
@@ -23,28 +23,24 @@ namespace croutes {
     }
 
     template <typename T> inline
-    answer_ptr<T> nn_alg<T>::_compute(ndata_ptr<T> data, uint32_t first_node) {
+    answer_ptr<T> nn_alg<T>::_compute(ndata_ptr<T> data, int32_t first_node) {
         if (data == nullptr) {
             return nullptr;
         }
 
-        std::set<uint32_t> visited;
-        auto is_visited = [&visited](uint32_t node) {
-            return visited.find(node) != visited.end();
-        };
-
         auto size = data->nodes_count();
+
+        std::vector<int32_t> visited(size, false);
 
         answer_ptr<T> ans = std::make_shared<answer<T>>();
 
-        bool last = false;
-        uint32_t current_node = first_node;
+        int32_t current_node = first_node;
         while (true) {
             const net_bond<T>* min = nullptr;
-            for (uint32_t j = 0; j < size; ++j) {
+            for (int32_t j = 0; j < size; ++j) {
                 if (j != current_node) {
                     auto at_j = &data->at(current_node, j);
-                    if ((min == nullptr || at_j->distance() < min->distance()) && !is_visited(j)) {
+                    if ((min == nullptr || at_j->distance() < min->distance()) && !visited[j]) {
                         min = at_j;
                     }
                 }
@@ -52,7 +48,7 @@ namespace croutes {
 
             if (min != nullptr) {
                 ans->add_bond(min);
-                visited.insert(current_node);
+                visited[current_node] = true;
                 current_node = min->to();
             } else {
                 ans->add_bond(&data->at(current_node, first_node));
