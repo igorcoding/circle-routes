@@ -10,24 +10,20 @@ namespace croutes {
     template <typename T>
     class nn_alg : public algorithm<T> {
     public:
-        nn_alg(uint32_t first_node = 0);
+        nn_alg();
 
     private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data);
-
-    private:
-        uint32_t _first_node;
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, uint32_t first_node);
     };
 
 
     template <typename T>
-    nn_alg<T>::nn_alg(uint32_t first_node)
-        : _first_node(first_node) {
+    nn_alg<T>::nn_alg() {
 
     }
 
     template <typename T> inline
-    answer_ptr<T> nn_alg<T>::_compute(ndata_ptr<T> data) {
+    answer_ptr<T> nn_alg<T>::_compute(ndata_ptr<T> data, uint32_t first_node) {
         if (data == nullptr) {
             return nullptr;
         }
@@ -42,7 +38,7 @@ namespace croutes {
         answer_ptr<T> ans = std::make_shared<answer<T>>();
 
         bool last = false;
-        uint32_t current_node = _first_node;
+        uint32_t current_node = first_node;
         while (true) {
             const net_bond<T>* min = nullptr;
             for (uint32_t j = 0; j < size; ++j) {
@@ -59,7 +55,7 @@ namespace croutes {
                 visited.insert(current_node);
                 current_node = min->to();
             } else {
-                ans->add_bond(&data->at(current_node, _first_node));
+                ans->add_bond(&data->at(current_node, first_node));
                 break;
             }
         }

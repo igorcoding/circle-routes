@@ -6,25 +6,11 @@
 #include <vector>
 #include <queue>
 #include <utility>
+#include <stack>
+#include <unordered_map>
+#include <algorithm>
 
 namespace croutes {
-
-    namespace prim_euler_alg_details {
-//        class pq_comparison
-//        {
-//        public:
-//            mycomparison(const bool& revparam=false)
-//            {reverse=revparam;}
-//            bool operator() (const int& lhs, const int&rhs) const
-//            {
-//                if (reverse) return (lhs>rhs);
-//                else return (lhs<rhs);
-//            }
-//
-//        private:
-//
-//        };
-    }
 
     template <typename T>
     class prim_euler_alg : public algorithm<T> {
@@ -32,7 +18,7 @@ namespace croutes {
         prim_euler_alg();
 
     private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data);
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, uint32_t first_node);
     private:
 
     };
@@ -43,9 +29,10 @@ namespace croutes {
     }
 
     template <typename T> inline
-    answer_ptr<T> prim_euler_alg<T>::_compute(ndata_ptr<T> data) {
+    answer_ptr<T> prim_euler_alg<T>::_compute(ndata_ptr<T> data, uint32_t first_node) {
         auto size = data->nodes_count();
-        std::vector<const net_bond<T>*> min_span_tree;
+        typedef const net_bond<T>* bond_t;
+        std::vector<bond_t> min_span_tree;
 
         std::vector<uint32_t> nodes(size);
         for (uint32_t i = 0; i < size; ++i) {
@@ -54,36 +41,10 @@ namespace croutes {
 
         std::vector<T*> d(size, nullptr);
         std::vector<uint32_t*> p(size, nullptr);
-        std::vector<bool> active(size);
+        std::vector<bool> active(size, true);
 
         auto zero = 0;
-        d[0] = &zero;
-
-
-        typedef std::pair<uint32_t, const T*> pq_item_t;
-
-        auto comp = [](const pq_item_t& lhs, const pq_item_t& rhs) {
-            if (lhs.second == nullptr && rhs.second == nullptr) {
-                return true;
-            }
-
-            if (lhs.second == nullptr) {
-                return true;
-            }
-            if (rhs.second == nullptr) {
-                return false;
-            }
-
-            return *lhs.second > *rhs.second;
-        };
-
-//        typedef std::priority_queue<pq_item_t, std::vector<pq_item_t>, decltype(comp)> pq_t;
-//        pq_t pq(comp);
-
-//        for (uint32_t i = 0; i < size; ++i) {
-//            pq.push(std::make_pair(i, d[i]));
-//            active[i] = true;
-//        }
+        d[first_node] = &zero;
 
         auto less = [&d](uint32_t lhs, uint32_t rhs) {
             if (d[lhs] == nullptr && d[rhs] == nullptr) {
@@ -111,7 +72,7 @@ namespace croutes {
             } else {
                 active[*v] = false;
                 if (p[*v] != nullptr) {
-                    std::cout << *v << " " << *p[*v] << std::endl;
+//                    std::cout << *v << " " << *p[*v] << std::endl;
                     min_span_tree.push_back(&data->at(*p[*v], *v));
                 }
 
@@ -129,8 +90,57 @@ namespace croutes {
         }
 
 
+        std::stack<uint32_t> back_stack;
+        std::vector<uint32_t> result;
 
-        return std::shared_ptr<answer<T>>();
+        result.push_back(min_span_tree[0]->from());
+        result.push_back(min_span_tree[0]->to());
+
+        back_stack.push(min_span_tree[0]->from());
+        back_stack.push(min_span_tree[0]->to());
+
+
+        while (!back_stack.empty()) {
+            auto back = result.back();
+            auto it = std::find_if(min_span_tree.begin(), min_span_tree.end(), [&back](bond_t& b) {
+                return b->from() == back;
+            });
+
+            if (it == min_span_tree.end()) {
+                back_stack.pop();
+                if (!back_stack.empty()) {
+                    result.push_back(back_stack.top());
+                }
+            } else {
+                result.push_back((*it)->to());
+                back_stack.push((*it)->to());
+                min_span_tree.erase(it);
+            }
+        }
+
+        active.clear();
+        active.resize(size, false);
+
+        std::vector<uint32_t> route;
+
+        for (size_t i = 0; i < result.size() - 1; ++i) {
+            auto r = result[i];
+
+            if (!active[r]) {
+                route.push_back(r);
+                active[r] = true;
+            }
+        }
+        route.push_back(result[result.size() - 1]);
+
+
+        answer_ptr<T> ans = std::make_shared<answer<T>>();
+        for (size_t i = 0; i < route.size() - 1; ++i) {
+            ans->add_bond(&data->at(route[i], route[i+1]));
+        }
+
+
+        return ans;
     }
 }
 

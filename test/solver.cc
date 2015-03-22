@@ -21,9 +21,9 @@ int main() {
     croutes::ndata_ptr<int> d = croutes::read_data<int>(ss);
 
     croutes::prim_euler_alg<int> alg;
-    auto a = alg.compute(d);
+    auto a = alg.compute(d, 4);
 
-    for (auto& b : a->bonds()) {
+    for (const auto& b : a->bonds()) {
         std::cout << *b << std::endl;
     }
     std::cout << "Length = " << a->total_distance() << std::endl;
