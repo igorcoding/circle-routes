@@ -16,6 +16,7 @@ namespace croutes {
         virtual ~algorithm();
 
         virtual answer_ptr<T> compute(ndata_ptr<T> data, int32_t first_node = 0);
+        virtual const std::string& name() = 0;
 
     protected:
         virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node) = 0;

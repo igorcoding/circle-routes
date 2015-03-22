@@ -12,14 +12,24 @@ namespace croutes {
     public:
         nn_alg();
 
+        virtual const std::string& name() override;
     private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node);
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node) override;
+
+    private:
+        std::string _name;
     };
 
 
     template <typename T>
-    nn_alg<T>::nn_alg() {
+    nn_alg<T>::nn_alg()
+        : _name("Nearest Neighbor algorithm") {
 
+    }
+
+    template <typename T> inline
+    const std::string& nn_alg<T>::name() {
+        return _name;
     }
 
     template <typename T> inline
@@ -57,8 +67,6 @@ namespace croutes {
 
         return ans;
     }
-
-
 }
 
 #endif //_CIRCLE_ROUTES_NN_ALG_H_

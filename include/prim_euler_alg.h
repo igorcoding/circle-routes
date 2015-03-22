@@ -17,15 +17,24 @@ namespace croutes {
     public:
         prim_euler_alg();
 
-    private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node);
-    private:
+        virtual const std::string& name() override;
 
+    private:
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node) override;
+    private:
+        std::string _name;
     };
 
-    template <typename T>
-    prim_euler_alg<T>::prim_euler_alg() {
 
+    template <typename T>
+    prim_euler_alg<T>::prim_euler_alg()
+        : _name("Prim-Euler algorithm") {
+
+    }
+
+    template <typename T> inline
+    const std::string& prim_euler_alg<T>::name() {
+        return _name;
     }
 
     template <typename T> inline
@@ -89,6 +98,8 @@ namespace croutes {
             back_stack.push(min_span_tree[0]->from());
             back_stack.push(min_span_tree[0]->to());
 
+            min_span_tree.erase(min_span_tree.begin());
+
 
             while (!back_stack.empty()) {
                 auto back = result.back();
@@ -109,6 +120,7 @@ namespace croutes {
             }
 
             int32_t lhs = result[0];
+            active[lhs] = true;
             for (size_t i = 1; i < result.size() - 1; ++i) {
                 auto r = result[i];
 
@@ -118,6 +130,7 @@ namespace croutes {
                     active[r] = true;
                 }
             }
+            ans->add_bond(bundle, &data->at(lhs, result.back()));
         }
 
         return ans;

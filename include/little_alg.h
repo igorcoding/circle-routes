@@ -18,17 +18,26 @@ namespace croutes {
     public:
         little_alg();
 
+        virtual const std::string& name() override;
+
     private:
-        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node);
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node) override;
         void worker(ndata_ptr<T> data, ndata_ptr<T> cdata1, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, std::vector<bool> skip_rows, std::vector<bool> skip_cols);
 
     private:
-
+        std::string _name;
     };
 
-    template <typename T>
-    little_alg<T>::little_alg() {
 
+    template <typename T>
+    little_alg<T>::little_alg()
+            : _name("Little\'s algorithm") {
+
+    }
+
+    template <typename T> inline
+    const std::string& little_alg<T>::name() {
+        return _name;
     }
 
     template <typename T>
@@ -44,8 +53,7 @@ namespace croutes {
         typedef std::priority_queue<bond_t, std::vector<bond_t>, decltype(comp)> pq_t;
 
 
-        bool continuation = true;
-        while (continuation) {
+        while (true) {
 
             // subtracting minimum in rows
             for (int32_t row = 0; row < size; ++row) {
@@ -151,6 +159,7 @@ namespace croutes {
             if (max_items[0]->distance() == cdata->inf()) {
                 for (auto& b : max_items) {
                     ans->add_bond(bundle, &data->at(b->from(), b->to()));
+                    delete b;
                 }
                 break;
             }
@@ -167,19 +176,6 @@ namespace croutes {
                 skip_rows[b->from()] = true;
                 skip_cols[b->to()] = true;
 
-//                auto unskipped_rows = std::count(skip_rows.begin(), skip_rows.end(), false);
-//                auto unskipped_cols = std::count(skip_cols.begin(), skip_cols.end(), false);
-
-//                if (max_items.size() == 2 && (unskipped_rows >= 0 && unskipped_rows < 2 || unskipped_cols >= 0 && unskipped_cols < 2)) {
-//                    auto other_k = (k + 1) % 2;
-//                    ans->add_bond(bundle, &data->at(max_items[other_k]->from(), max_items[other_k]->to()));
-//                    continuation = false;
-//                    recursive = false;
-//                } else {
-//                    continuation = true;
-// //                   continuation = std::find(skip_rows.begin(), skip_rows.end(), false) != skip_rows.end() &&
-// //                           std::find(skip_cols.begin(), skip_cols.end(), false) != skip_cols.end();
-//                }
                 int32_t row = 0;
                 for (row = 0; row < size; ++row) {
                     if (skip_rows[row])
