@@ -1,10 +1,9 @@
 #include "nn_alg.h"
 #include "prim_euler_alg.h"
+#include <little_alg.h>
 
 #include <iostream>
 #include <sstream>
-
-using namespace std;
 
 int main() {
 
@@ -18,9 +17,9 @@ int main() {
     std::stringstream ss;
     ss << s;
 
-    croutes::ndata_ptr<int> d = croutes::read_data<int>(ss);
+    auto d = croutes::read_data<int>(ss);
 
-    croutes::nn_alg<int> alg;
+    croutes::prim_euler_alg<int> alg;
     auto a = alg.compute(d, 4);
 
     for (const auto& b : a->bonds()) {

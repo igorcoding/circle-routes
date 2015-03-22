@@ -10,6 +10,13 @@
 #include <memory>
 
 namespace croutes {
+
+    template <typename T>
+    class answer;
+
+    template <typename T>
+    using answer_ptr = std::shared_ptr<answer<T>>;
+
     template <typename T>
     class answer {
     public:
@@ -21,12 +28,16 @@ namespace croutes {
         void add_bond(const net_bond<T>* bond);
         T total_distance() const;
 
+        static answer_ptr<T> init();
+
     private:
         std::vector<const net_bond<T>*> _bonds;
     };
 
     template <typename T>
-    using answer_ptr = std::shared_ptr<answer<T>>;
+    answer_ptr<T> answer<T>::init() {
+        return std::make_shared<answer<T>>();
+    }
 
     template <typename T>
     answer<T>::answer() {

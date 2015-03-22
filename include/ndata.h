@@ -10,6 +10,7 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <limits>
 
 namespace croutes {
 
@@ -59,6 +60,7 @@ namespace croutes {
         ~ndata();
 
         size_t nodes_count() const { return _nodes_count; }
+        T inf() const { return _inf; }
 
         net_bond<T>& at(int32_t from_node, int32_t to_node);
         const net_bond<T>& at(int32_t from_node, int32_t to_node) const;
@@ -73,6 +75,7 @@ namespace croutes {
 
     private:
         size_t _nodes_count;
+        T _inf;
         std::vector<std::vector<net_bond<T>*>*>* _matrix;
     };
 
@@ -83,7 +86,8 @@ namespace croutes {
     template <typename T>
     ndata<T>::ndata(size_t nodes_count)
         : _nodes_count(nodes_count),
-          _matrix(new std::vector<std::vector<net_bond<T>*>*>()) {
+          _matrix(new std::vector<std::vector<net_bond<T>*>*>()),
+          _inf(std::numeric_limits<T>::has_infinity ? std::numeric_limits<T>::infinity() : std::numeric_limits<T>::max()) {
         _matrix->reserve(_nodes_count);
         for (int32_t i = 0; i < _nodes_count; ++i) {
             std::vector<net_bond<T>*>* row = new std::vector<net_bond<T>*>();

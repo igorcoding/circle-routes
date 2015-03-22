@@ -34,26 +34,24 @@ namespace croutes {
         typedef const net_bond<T>* bond_t;
         std::vector<bond_t> min_span_tree;
 
-        std::vector<T> d(size);
-        std::vector<bool> d_inf(size, true);
-
+        std::vector<T> d(size, data->inf());
         std::vector<int32_t> p(size, -1);
 
         std::vector<bool> active(size, true);
 
         d[first_node] = 0;
-        d_inf[first_node] = false;
+//        d_inf[first_node] = false;
 
-        auto less = [&d, &d_inf](int32_t lhs, int32_t rhs) {
-            if (d_inf[lhs] == true && d_inf[rhs] == true) {
-                return false;
-            }
-            if (d_inf[lhs] == true) {
-                return false;
-            }
-            if (d_inf[rhs] == true) {
-                return true;
-            }
+        auto less = [&d](int32_t lhs, int32_t rhs) {
+//            if (d_inf[lhs] == true && d_inf[rhs] == true) {
+//                return false;
+//            }
+//            if (d_inf[lhs] == true) {
+//                return false;
+//            }
+//            if (d_inf[rhs] == true) {
+//                return true;
+//            }
             return d[lhs] < d[rhs];
         };
 
@@ -76,9 +74,8 @@ namespace croutes {
                 for (int32_t u = 0; u < size; ++u) {
                     auto n = data->at(v, u);
 
-                    if (d_inf[u] == true || n.distance() < d[u]) {
+                    if (n.distance() < d[u]) {
                         d[u] = n.distance();
-                        d_inf[u] = false;
 
                         p[u] = v;
                     }
@@ -116,7 +113,7 @@ namespace croutes {
         }
 
 
-        answer_ptr<T> ans = std::make_shared<answer<T>>();
+        auto ans = answer<T>::init();
 
         int32_t lhs = result[0];
         for (size_t i = 1; i < result.size() - 1; ++i) {

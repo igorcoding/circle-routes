@@ -32,7 +32,7 @@ namespace croutes {
 
         std::vector<int32_t> visited(size, false);
 
-        answer_ptr<T> ans = std::make_shared<answer<T>>();
+        auto ans = answer<T>::init();
 
         int32_t current_node = first_node;
         while (true) {
