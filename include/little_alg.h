@@ -20,6 +20,7 @@ namespace croutes {
 
     private:
         virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node);
+        void worker(ndata_ptr<T> data, ndata_ptr<T> cdata1, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, std::vector<bool> skip_rows, std::vector<bool> skip_cols);
 
     private:
 
@@ -30,30 +31,17 @@ namespace croutes {
 
     }
 
-    template <typename T> inline
-    answer_ptr<T> little_alg<T>::_compute(ndata_ptr<T> data, int32_t first_node) {
-        auto ans = answer<T>::init();
-        auto bundle = ans->create_bundle();
+    template <typename T>
+    void little_alg<T>::worker(ndata_ptr<T> data, ndata_ptr<T> cdata1, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, std::vector<bool> skip_rows, std::vector<bool> skip_cols) {
+        auto size = (int32_t) data->nodes_count();
+        auto cdata = cdata1->copy();
 
         typedef net_bond<T>* bond_t;
-        typedef const net_bond<T>* const_bond_t;
-
         auto comp = [](const bond_t& lhs, const bond_t& rhs) {
             return lhs->distance() < rhs->distance();
         };
 
         typedef std::priority_queue<bond_t, std::vector<bond_t>, decltype(comp)> pq_t;
-
-
-        auto size = (int32_t) data->nodes_count();
-        auto cdata = data->copy();
-
-        for (int32_t row = 0; row < size; ++row) {
-            cdata->at(row, row).distance() = cdata->inf();
-        }
-
-        std::vector<bool> skip_rows(data->nodes_count(), false);
-        std::vector<bool> skip_cols(data->nodes_count(), false);
 
 
         bool continuation = true;
@@ -72,8 +60,7 @@ namespace croutes {
                 }
 
                 if (min_dist == cdata->inf()) {
-//                    std::cout << row << ", " << col << std::endl;
-                    return ans;
+                    return;
                 }
 
                 if (min_dist != 0) {
@@ -98,8 +85,7 @@ namespace croutes {
                 }
 
                 if (min_dist == cdata->inf()) {
-//                    std::cout << row << ", " << col << std::endl;
-                    return ans;
+                    return;
                 }
 
                 if (min_dist != 0) {
@@ -155,32 +141,45 @@ namespace croutes {
                     max_items.push_back(pq.top());
                     pq.pop();
                 } else {
-                    break;
+                    bond_t b1 = pq.top();
+                    pq.pop();
+                    delete b1;
                 }
             }
 
-            // TODO: for now getting only first
-            bond_t b = max_items[0];
-            ans->add_bond(bundle, &data->at(b->from(), b->to()));
 
-            skip_rows[b->from()] = true;
-            skip_cols[b->to()] = true;
-
-            auto skipped_rows = std::count(skip_rows.begin(), skip_rows.end(), true);
-            auto skipped_cols = std::count(skip_cols.begin(), skip_cols.end(), true);
-
-            if (max_items.size() > 1 && (skipped_rows == size - 1 || skipped_cols == size - 1)) {
-                for (size_t i = 1; i < max_items.size(); ++i) {
-                    ans->add_bond(bundle, &data->at(max_items[i]->from(), max_items[i]->to()));
+            if (max_items[0]->distance() == cdata->inf()) {
+                for (auto& b : max_items) {
+                    ans->add_bond(bundle, &data->at(b->from(), b->to()));
                 }
-                continuation = false;
-            } else {
-                continuation = std::find(skip_rows.begin(), skip_rows.end(), false) != skip_rows.end() &&
-                                std::find(skip_cols.begin(), skip_cols.end(), false) != skip_cols.end();
+                break;
             }
+            bool recursive = max_items.size() > 1;
+            auto old_bundle = bundle;
+            for (size_t k = 0; k < max_items.size(); ++k) {
+                auto& b = max_items[k];
+                if (max_items.size() > 1) {
+                    bundle = ans->copy_bundle(old_bundle);
+                }
+                ans->add_bond(bundle, &data->at(b->from(), b->to()));
 
 
-            if (continuation) {
+                skip_rows[b->from()] = true;
+                skip_cols[b->to()] = true;
+
+//                auto unskipped_rows = std::count(skip_rows.begin(), skip_rows.end(), false);
+//                auto unskipped_cols = std::count(skip_cols.begin(), skip_cols.end(), false);
+
+//                if (max_items.size() == 2 && (unskipped_rows >= 0 && unskipped_rows < 2 || unskipped_cols >= 0 && unskipped_cols < 2)) {
+//                    auto other_k = (k + 1) % 2;
+//                    ans->add_bond(bundle, &data->at(max_items[other_k]->from(), max_items[other_k]->to()));
+//                    continuation = false;
+//                    recursive = false;
+//                } else {
+//                    continuation = true;
+// //                   continuation = std::find(skip_rows.begin(), skip_rows.end(), false) != skip_rows.end() &&
+// //                           std::find(skip_cols.begin(), skip_cols.end(), false) != skip_cols.end();
+//                }
                 int32_t row = 0;
                 for (row = 0; row < size; ++row) {
                     if (skip_rows[row])
@@ -218,24 +217,47 @@ namespace croutes {
                         break;
                     }
                 }
+                auto prev_dist = cdata->at(row, col).distance();
+                if (row < size && col < size) {
+                    cdata->at(row, col).distance() = cdata->inf();
+                }
 
-                cdata->at(row, col).distance() = cdata->inf();
+                if (recursive) {
+                    worker(data, cdata, ans, bundle, skip_rows, skip_cols);
+
+                    skip_rows[b->from()] = false;
+                    skip_cols[b->to()] = false;
+                    if (row < size && col < size) {
+                        cdata->at(row, col).distance() = prev_dist;
+                    }
+                }
             }
-
             for (auto& b1 : max_items) {
                 delete b1;
             }
-
-            while (!pq.empty()) {
-                bond_t b1 = pq.top();
-                pq.pop();
-                delete b1;
+            if (recursive) {
+                ans->delete_bundle(old_bundle);
+                break;
             }
         }
+    }
 
+    template <typename T> inline
+    answer_ptr<T> little_alg<T>::_compute(ndata_ptr<T> data, int32_t first_node) {
+        auto ans = answer<T>::init();
+        auto bundle = ans->create_bundle();
 
+        auto size = (int32_t) data->nodes_count();
 
+        auto cdata = data->copy();
 
+        for (int32_t row = 0; row < size; ++row) {
+            cdata->at(row, row).distance() = cdata->inf();
+        }
+
+        std::vector<bool> skip_rows(cdata->nodes_count(), false);
+        std::vector<bool> skip_cols(cdata->nodes_count(), false);
+        worker(data, cdata, ans, bundle, skip_rows, skip_cols);
         return ans;
     }
 }

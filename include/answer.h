@@ -8,6 +8,7 @@
 #include <set>
 #include <stdexcept>
 #include <memory>
+#include <algorithm>
 
 namespace croutes {
 
@@ -29,6 +30,7 @@ namespace croutes {
 
         bundle_t* create_bundle();
         bundle_t* copy_bundle(bundle_t* bundle);
+        void delete_bundle(bundle_t* bundle);
         void add_bond(bundle_t* bundle, const net_bond<T>* bond);
         T total_distance(bundle_t* bundle) const;
 
@@ -63,8 +65,14 @@ namespace croutes {
 
     template <typename T> inline
     typename answer<T>::bundle_t* answer<T>::copy_bundle(bundle_t* bundle) {
-        _bundles.push_back(new bundle_t(bundle));
+        _bundles.push_back(new bundle_t(*bundle));
         return _bundles.back();
+    }
+
+    template <typename T> inline
+    void answer<T>::delete_bundle(bundle_t* bundle) {
+        _bundles.erase(std::find(_bundles.begin(), _bundles.end(), bundle));
+        delete bundle;
     }
 
     template <typename T> inline
