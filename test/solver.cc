@@ -1,4 +1,5 @@
 #include "nn_alg.h"
+#include "prim_euler_alg.h"
 
 #include <iostream>
 #include <sstream>
@@ -19,11 +20,12 @@ int main() {
 
     croutes::ndata_ptr<int> d = croutes::read_data<int>(ss);
 
-    croutes::nn_alg<int> nn;
-    auto a = nn.compute(d);
+    croutes::prim_euler_alg<int> alg;
+    auto a = alg.compute(d);
 
-    for (auto b : a->bonds()) {
+    for (auto& b : a->bonds()) {
         std::cout << *b << std::endl;
     }
+    std::cout << "Length = " << a->total_distance() << std::endl;
     return 0;
 }

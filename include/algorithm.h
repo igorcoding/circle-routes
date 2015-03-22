@@ -15,9 +15,10 @@ namespace croutes {
         algorithm();
         virtual ~algorithm();
 
-        virtual answer_ptr<T> compute(ndata_ptr<T> data) = 0;
+        virtual answer_ptr<T> compute(ndata_ptr<T> data);
 
     protected:
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data) = 0;
     };
 
     template <typename T>
@@ -28,6 +29,14 @@ namespace croutes {
     template <typename T>
     algorithm<T>::~algorithm() {
 
+    }
+
+    template <typename T>
+    answer_ptr<T> algorithm<T>::compute(ndata_ptr<T> data) {
+        if (data == nullptr) {
+            return nullptr;
+        }
+        return _compute(data);
     }
 }
 

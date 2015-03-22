@@ -12,7 +12,8 @@ namespace croutes {
     public:
         nn_alg(uint32_t first_node = 0);
 
-        virtual answer_ptr<T> compute(ndata_ptr<T> data);
+    private:
+        virtual answer_ptr<T> _compute(ndata_ptr<T> data);
 
     private:
         uint32_t _first_node;
@@ -25,8 +26,8 @@ namespace croutes {
 
     }
 
-    template <typename T>
-    answer_ptr<T> nn_alg<T>::compute(ndata_ptr<T> data) {
+    template <typename T> inline
+    answer_ptr<T> nn_alg<T>::_compute(ndata_ptr<T> data) {
         if (data == nullptr) {
             return nullptr;
         }

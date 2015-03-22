@@ -13,7 +13,7 @@ namespace croutes {
 
         uint32_t from() const { return _from; }
         uint32_t to() const { return _to; }
-        T distance() const { return _distance;  }
+        const T& distance() const { return _distance;  }
 
 
         void set_from(uint32_t from) { _from = from; }
