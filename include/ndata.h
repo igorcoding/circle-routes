@@ -5,6 +5,7 @@
 
 #include <string>
 #include <iostream>
+#include <istream>
 #include <fstream>
 #include <cstdlib>
 #include <memory>
@@ -192,32 +193,9 @@ namespace croutes {
 
     /*************** reading functions ***************/
 
-    template <typename T>
-    ndata_ptr<T> read_data() {
-        return read_data<T>(std::cin);
-    }
-
-    template <typename T>
-    ndata_ptr<T> read_data(const std::string& filename) {
-        std::fstream fs;
-        fs.open(filename, std::fstream::in);
-        if (fs.is_open()) {
-            try {
-                auto d = read_data<T>(fs);
-                fs.close();
-                return d;
-            } catch (std::exception& e) {
-                fs.close();
-                throw e;
-            }
-        } else {
-            throw file_not_found(filename);
-        }
-    }
-
-    template <typename T>
-    ndata_ptr<T> read_data(std::istream& is) {
-        size_t nodes_count;
+    template <typename T, typename IS>
+    ndata_ptr<T> read_data(IS& is) {
+        size_t nodes_count = 0;
         if (is.good()) {
             is >> nodes_count;
 
@@ -233,6 +211,29 @@ namespace croutes {
             return d;
         }
         throw std::runtime_error("Stream is bad");
+    }
+
+    template <typename T>
+    ndata_ptr<T> read_console() {
+        return read_data<T>(std::cin);
+    }
+
+    template <typename T>
+    ndata_ptr<T> read_file(const std::string& filename) {
+        std::fstream fs;
+        fs.open(filename, std::fstream::in);
+        if (fs.is_open()) {
+            try {
+                auto d = read_data<T>(fs);
+                fs.close();
+                return d;
+            } catch (std::exception& e) {
+                fs.close();
+                throw e;
+            }
+        } else {
+            throw file_not_found(filename);
+        }
     }
 }
 
