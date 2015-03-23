@@ -6,4 +6,4 @@ link_directories(${Poco_LIBRARY_DIRS})
 message(STATUS ${Poco_LIBRARY_DIRS})
 
 add_executable(server server.cc server.h)
-target_link_libraries(server ${PROJECT_NAME} -lPocoFoundation -lPocoNet -lPocoUtil)
+target_link_libraries(server ${PROJECT_NAME} -lPocoFoundation -lPocoNet -lPocoUtil -lPocoJSON)

@@ -17,24 +17,25 @@ namespace croutes {
     public:
         prim_euler_alg();
 
-        virtual const std::string& name() override;
+        virtual const std::string& short_name() override { return _short_name; }
+        virtual const std::string& name() override { return _name; }
+        virtual const std::string& russian_name() override { return _russian_name; }
 
     private:
         virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node) override;
     private:
+        std::string _short_name;
         std::string _name;
+        std::string _russian_name;
     };
 
 
     template <typename T>
     prim_euler_alg<T>::prim_euler_alg()
-        : _name("Prim-Euler algorithm") {
+            : _short_name("prim_euler_alg"),
+              _name("Prim-Euler algorithm"),
+              _russian_name("Алгоритм Прима-Эйлера") {
 
-    }
-
-    template <typename T> inline
-    const std::string& prim_euler_alg<T>::name() {
-        return _name;
     }
 
     template <typename T> inline

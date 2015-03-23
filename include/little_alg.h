@@ -18,26 +18,27 @@ namespace croutes {
     public:
         little_alg();
 
-        virtual const std::string& name() override;
+        virtual const std::string& short_name() override { return _short_name; }
+        virtual const std::string& name() override { return _name; }
+        virtual const std::string& russian_name() override { return _russian_name; }
 
     private:
         virtual answer_ptr<T> _compute(ndata_ptr<T> data, int32_t first_node) override;
         void worker(ndata_ptr<T> data, ndata_ptr<T> cdata1, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, std::vector<bool> skip_rows, std::vector<bool> skip_cols);
 
     private:
+        std::string _short_name;
         std::string _name;
+        std::string _russian_name;
     };
 
 
     template <typename T>
     little_alg<T>::little_alg()
-            : _name("Little\'s algorithm") {
+            : _short_name("little_alg"),
+              _name("Little\'s algorithm"),
+              _russian_name("Алгоритм Литтла") {
 
-    }
-
-    template <typename T> inline
-    const std::string& little_alg<T>::name() {
-        return _name;
     }
 
     template <typename T>

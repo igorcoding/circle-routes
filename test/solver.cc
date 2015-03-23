@@ -35,7 +35,6 @@ void expirement(croutes::ndata_ptr<T> data) {
         delete alg;
         alg = nullptr;
     }
-
 }
 
 int main() {
