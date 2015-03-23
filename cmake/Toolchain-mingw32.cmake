@@ -9,7 +9,7 @@ SET(CMAKE_RC_COMPILER i586-mingw32msvc-windres)
 SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Wl,--no-undefined -static-libgcc -static-libstdc++ -Wl,-O1 -Wl,--as-needed -Wl,--sort-common -s")
 
 # here is the target environment located
-SET(CMAKE_FIND_ROOT_PATH  /usr/i586-mingw32msvc /home/igor/mingw-install )
+SET(CMAKE_FIND_ROOT_PATH  /usr/i586-mingw32msvc $ENV{HOME}/mingw-install )
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search 
