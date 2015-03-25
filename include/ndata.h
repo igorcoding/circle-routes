@@ -71,6 +71,7 @@ namespace croutes {
         T inf() const { return _inf; }
 
         net_bond<T>& at(int32_t from_node, int32_t to_node);
+        net_bond<T>& at(size_t from_node, size_t to_node);
         const net_bond<T>& at(int32_t from_node, int32_t to_node) const;
 
         net_bond<T>& operator() (int32_t from_node, int32_t to_node);
@@ -142,6 +143,11 @@ namespace croutes {
     template <typename T> inline
     net_bond<T>& ndata<T>::at(int32_t from_node, int32_t to_node) {
         return *((*((*_matrix)[from_node]))[to_node]);
+    }
+
+    template <typename T> inline
+    net_bond<T>& ndata<T>::at(size_t from_node, size_t to_node) {
+        return at((int32_t) from_node, (int32_t) to_node);
     }
 
     template <typename T> inline

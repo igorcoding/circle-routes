@@ -4,6 +4,7 @@
 #include "net_bond.h"
 
 #include <vector>
+#include <deque>
 #include <stdint.h>
 #include <set>
 #include <stdexcept>
@@ -21,7 +22,7 @@ namespace croutes {
     template <typename T>
     class answer {
     public:
-        typedef std::vector<const net_bond<T>*> bundle_t;
+        typedef std::deque<const net_bond<T>*> bundle_t;
 
         answer();
         ~answer();
@@ -32,6 +33,7 @@ namespace croutes {
         bundle_t* copy_bundle(bundle_t* bundle);
         void delete_bundle(bundle_t* bundle);
         void add_bond(bundle_t* bundle, const net_bond<T>* bond);
+        void add_bond_front(bundle_t* bundle, const net_bond<T>* bond);
         T total_distance(bundle_t* bundle) const;
         std::pair<const bundle_t*, T> find_min_distance() const;
 
@@ -79,6 +81,11 @@ namespace croutes {
     template <typename T> inline
     void answer<T>::add_bond(bundle_t* bundle, const net_bond<T>* bond) {
         bundle->push_back(bond);
+    }
+
+    template <typename T> inline
+    void answer<T>::add_bond_front(bundle_t* bundle, const net_bond<T>* bond) {
+        bundle->push_front(bond);
     }
 
     template <typename T> inline

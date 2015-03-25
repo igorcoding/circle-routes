@@ -29,7 +29,7 @@ namespace croutes {
     nn_alg<T>::nn_alg()
         : _short_name("nn_alg"),
           _name("Nearest Neighbor algorithm"),
-          _russian_name("Алгоритм \"Иди в ближний\"") {
+          _russian_name("Алгоритм ближайшего соседа") {
 
     }
 

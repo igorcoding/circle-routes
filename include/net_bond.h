@@ -5,6 +5,12 @@
 #include <ostream>
 
 namespace croutes {
+
+    template <typename T>
+    class net_bond;
+
+    template <typename T> using net_bond_ptr = net_bond<T>*;
+
     template <typename T>
     class net_bond {
     public:
@@ -20,6 +26,9 @@ namespace croutes {
         void set_from(int32_t from) { _from = from; }
         void set_to(int32_t to) { _to = to; }
         void set_distance(T distance) { _distance = distance; }
+
+        bool equal(const net_bond<T>& rhs);
+        bool same(const net_bond<T>& rhs);
 
     private:
         int32_t _from;
@@ -40,6 +49,17 @@ namespace croutes {
         os << b.from() << " --" << b.distance() << "--> " << b.to();
         return os;
     }
- }
+
+    template <typename T>
+    bool net_bond<T>::equal(const net_bond<T>& rhs) {
+        return _from == rhs._from && _to == rhs._to;
+    }
+
+    template <typename T>
+    bool net_bond<T>::same(const net_bond<T>& rhs) {
+        return _from == rhs._from && _to == rhs._to ||
+                _from == rhs._to && _to == rhs._from;
+    }
+}
 
 #endif //_CIRCLE_ROUTES_NET_BOND_H_
