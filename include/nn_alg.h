@@ -66,6 +66,7 @@ namespace croutes {
             }
         }
 
+        ans->unique();
         return ans;
     }
 }
