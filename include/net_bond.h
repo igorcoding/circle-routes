@@ -27,8 +27,8 @@ namespace croutes {
         void set_to(int32_t to) { _to = to; }
         void set_distance(T distance) { _distance = distance; }
 
-        bool equal(const net_bond<T>& rhs);
-        bool same(const net_bond<T>& rhs);
+        bool equal(const net_bond<T>& rhs) const;
+        bool same(const net_bond<T>& rhs) const;
 
     private:
         int32_t _from;
@@ -51,12 +51,12 @@ namespace croutes {
     }
 
     template <typename T>
-    bool net_bond<T>::equal(const net_bond<T>& rhs) {
+    bool net_bond<T>::equal(const net_bond<T>& rhs) const {
         return _from == rhs._from && _to == rhs._to;
     }
 
     template <typename T>
-    bool net_bond<T>::same(const net_bond<T>& rhs) {
+    bool net_bond<T>::same(const net_bond<T>& rhs) const {
         return _from == rhs._from && _to == rhs._to ||
                 _from == rhs._to && _to == rhs._from;
     }

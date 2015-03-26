@@ -39,6 +39,7 @@ namespace croutes {
         void unique();
 
         static answer_ptr<T> init();
+        static bool bundles_same(bundle_t* lhs, bundle_t* rhs);
 
     private:
         std::vector<bundle_t*> _bundles;
@@ -114,11 +115,76 @@ namespace croutes {
 
     template <typename T> inline
     void answer<T>::unique() {
-
-        auto prev = _bundles[0];
         for (size_t i = 1; i < _bundles.size(); ++i) {
+            auto& bi = _bundles[i];
+
+            for (size_t j = 1; j < _bundles.size(); ++j) {
+                auto& bj = _bundles[j];
+                if (bundles_same(bi, bj)) {
+                    delete_bundle(bj);
+                    --j;
+                }
+            }
+        }
+    }
+
+    template <typename T> inline
+    bool answer<T>::bundles_same(bundle_t* lhs, bundle_t* rhs) {
+        bool same = true;
+
+        size_t j = 0;
+        auto& current = (*lhs)[j];
+
+        size_t found = rhs->size();
+        for (size_t i = 0; i < rhs->size(); ++i) {
+            auto& bond = (*rhs)[i];
+            if (current->same(*bond)) {
+                found = i;
+                break;
+            }
+        }
+
+        if (found < rhs->size()) {
+            size_t i = found;
+            if (i == rhs->size() - 1) {
+                i = 0;
+            } else {
+                ++i;
+            }
+
+            if (j == lhs->size() - 1) {
+                j = 0;
+            } else {
+                ++j;
+            }
+            for (; ; ) {
+                if (i == found) {
+                    break;
+                }
+
+
+                if (!(*lhs)[j]->same(*(*rhs)[i])) {
+                    same = false;
+                    break;
+                }
+
+
+                if (i == rhs->size() - 1) {
+                    i = 0;
+                } else {
+                    ++i;
+                }
+                if (j == lhs->size() - 1) {
+                    j = 0;
+                } else {
+                    ++j;
+                }
+            }
 
         }
+
+        return same;
+
     }
 }
 

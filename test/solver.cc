@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 64 22 16 10 8 0
 )";
         std::stringstream ss;
-        ss << s2;
+        ss << s;
         d = croutes::read_data<double>(ss);
     } else {
         std::cout << desc << std::endl;

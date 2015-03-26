@@ -72,6 +72,7 @@ namespace croutes {
         for (auto& b : ans->bundles()) {
             ans->add_bond(b, &data->at(b->back()->to(), b->front()->from()));
         }
+        ans->unique();
 
         return ans;
     }
