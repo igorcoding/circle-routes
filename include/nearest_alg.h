@@ -65,9 +65,9 @@ namespace croutes {
         });
 
         worker(data, ans, bundle, queue, 0, -1, edges, visited, false);
-        if (ans->bundles().size() > 1) {
-            ans->delete_bundle(bundle);
-        }
+//        if (ans->bundles().size() > 1) {
+//
+//        }
 
         for (auto& b : ans->bundles()) {
             ans->add_bond(b, &data->at(b->back()->to(), b->front()->from()));
@@ -104,11 +104,15 @@ namespace croutes {
                     current_group_begin = j;
                 }
                 if (!recursive && (j == s - 1 || queue[j]->distance() == queue[j+1]->distance())) {
-                    ++j;
-                    while (j < s && queue[j]->distance() == queue[j-1]->distance()) {
+                    while (j < s - 1 && queue[j]->distance() == queue[j+1]->distance()) {
                         worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
                         ++j;
                     }
+                    if (j < s) {
+                        worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
+                    }
+                    ans->delete_bundle(bundle);
+                    break;
                 } else {
                     if (try_to_add(data, ans, bundle, queue[j], edges, visited)) {
                         prev_bond = queue[j];

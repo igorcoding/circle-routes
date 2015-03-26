@@ -36,6 +36,7 @@ namespace croutes {
         void add_bond_front(bundle_t* bundle, const net_bond<T>* bond);
         T total_distance(bundle_t* bundle) const;
         std::pair<const bundle_t*, T> find_min_distance() const;
+        void unique();
 
         static answer_ptr<T> init();
 
@@ -109,6 +110,15 @@ namespace croutes {
             }
         }
         return std::make_pair(min_bundle, min_distance);
+    }
+
+    template <typename T> inline
+    void answer<T>::unique() {
+
+        auto prev = _bundles[0];
+        for (size_t i = 1; i < _bundles.size(); ++i) {
+
+        }
     }
 }
 

@@ -21,6 +21,11 @@ void expirement(croutes::ndata_ptr<T> data) {
         auto minimum = a->find_min_distance();
 
         std::cout << "=== " << alg->name() << " ===" << std::endl;
+        if (!minimum.first) {
+            std::cout << "error";
+            delete alg;
+            continue;
+        }
         for (const auto& bond : *minimum.first) {
             std::cout << *bond << std::endl;
         }
@@ -93,7 +98,7 @@ int main(int argc, char** argv) {
 64 22 16 10 8 0
 )";
         std::stringstream ss;
-        ss << s3;
+        ss << s2;
         d = croutes::read_data<double>(ss);
     } else {
         std::cout << desc << std::endl;
