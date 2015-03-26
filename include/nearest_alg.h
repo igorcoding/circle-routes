@@ -65,6 +65,9 @@ namespace croutes {
         });
 
         worker(data, ans, bundle, queue, 0, -1, edges, visited, false);
+        if (ans->bundles().size() > 1) {
+            ans->delete_bundle(bundle);
+        }
 
         for (auto& b : ans->bundles()) {
             ans->add_bond(b, &data->at(b->back()->to(), b->front()->from()));
@@ -106,8 +109,6 @@ namespace croutes {
                         worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
                         ++j;
                     }
-                    ans->delete_bundle(bundle);
-                    break;
                 } else {
                     if (try_to_add(data, ans, bundle, queue[j], edges, visited)) {
                         prev_bond = queue[j];

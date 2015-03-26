@@ -13,6 +13,8 @@
 #include <vector>
 #include <limits>
 
+#include <rapidjson/document.h>
+
 namespace croutes {
 
     /*************** exceptions ***************/
@@ -240,6 +242,31 @@ namespace croutes {
         } else {
             throw file_not_found(filename);
         }
+    }
+
+    template <typename T>
+    ndata_ptr<T> read_json(const std::string& json) {
+        using namespace rapidjson;
+        Document document;
+        document.Parse(json.c_str());
+
+
+        size_t nodes_count = document["size"].GetUint();
+        const Value& rows_arr = document["arr"];
+        assert(rows_arr.IsArray());
+
+        auto d = std::make_shared<ndata<T>>(nodes_count);
+        for (size_t i = 0; i < rows_arr.Size(); ++i) {
+            const Value& cols_arr = rows_arr[i];
+            assert(cols_arr.IsArray());
+
+            for (size_t j = 0; j < cols_arr.Size(); ++j) {
+                T dist = static_cast<T>(cols_arr[j].GetDouble());
+                d->add_node((int32_t) i, (int32_t) j, dist);
+            }
+        }
+
+        return d;
     }
 }
 
