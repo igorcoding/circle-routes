@@ -1,5 +1,5 @@
-#ifndef _CIRCLE_ROUTES_NEAREST_ALG_H_
-#define _CIRCLE_ROUTES_NEAREST_ALG_H_
+#ifndef _CIRCLE_ROUTES_NEAREST_WITH_RET_ALG_H_
+#define _CIRCLE_ROUTES_NEAREST_WITH_RET_ALG_H_
 
 
 #include "algorithm.h"
@@ -198,4 +198,4 @@ namespace croutes {
     }
 }
 
-#endif //_CIRCLE_ROUTES_NEAREST_ALG_H_
+#endif //_CIRCLE_ROUTES_NEAREST_WITH_RET_ALG_H_
