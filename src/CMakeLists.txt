@@ -10,6 +10,6 @@ set(HEADER_FILES ../include/nn_alg.h
                 ../include/net_bond.h
                 ../include/prim_euler_alg.h
                 ../include/little_alg.h
-                ../include/nearest_alg.h)
+                ../include/nearest_with_ret_alg.h)
 
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES} ../include/nearest_alg.h)

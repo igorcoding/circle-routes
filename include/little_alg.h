@@ -255,7 +255,7 @@ namespace croutes {
         std::vector<bool> skip_rows(cdata->nodes_count(), false);
         std::vector<bool> skip_cols(cdata->nodes_count(), false);
         worker(data, cdata, ans, bundle, skip_rows, skip_cols);
-        ans->unique();
+//        ans->unique();
         return ans;
     }
 }

@@ -134,7 +134,7 @@ namespace croutes {
             ans->add_bond(bundle, &data->at(lhs, result.back()));
         }
 
-        ans->unique();
+//        ans->unique();
         return ans;
     }
 }

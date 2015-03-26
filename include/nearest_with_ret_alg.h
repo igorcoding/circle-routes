@@ -10,9 +10,9 @@
 
 namespace croutes {
     template <typename T>
-    class nearest_alg : public algorithm<T> {
+    class nearest_with_ret_alg : public algorithm<T> {
     public:
-        nearest_alg();
+        nearest_with_ret_alg();
 
         virtual const std::string& short_name() override { return _short_name; }
         virtual const std::string& name() override { return _name; }
@@ -30,15 +30,15 @@ namespace croutes {
 
 
     template <typename T>
-    nearest_alg<T>::nearest_alg()
-            : _short_name("nearest_alg"),
-              _name("To the nearset algorithm"),
-              _russian_name("Алгоритм \"Иди в ближний\"") {
+    nearest_with_ret_alg<T>::nearest_with_ret_alg()
+            : _short_name("nearest_with_ret_alg"),
+              _name("To the nearset algorithm (with return)"),
+              _russian_name("Алгоритм \"Иди в ближний\" (с возвратом)") {
 
     }
 
     template <typename T> inline
-    answer_ptr<T> nearest_alg<T>::_compute(ndata_ptr<T> data, int32_t first_node_) {
+    answer_ptr<T> nearest_with_ret_alg<T>::_compute(ndata_ptr<T> data, int32_t first_node_) {
         auto size = data->nodes_count();
 
         auto ans = answer<T>::init();
@@ -72,64 +72,86 @@ namespace croutes {
         for (auto& b : ans->bundles()) {
             ans->add_bond(b, &data->at(b->back()->to(), b->front()->from()));
         }
+//        ans->unique();
 
         return ans;
     }
 
     template <typename T> inline
-    void nearest_alg<T>::worker(ndata_ptr<T> data, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, const std::vector<net_bond_ptr<T>>& queue, int32_t group_begin, int32_t current, std::vector<int32_t> edges, std::vector<bool> visited, bool recursive) {
+    void nearest_with_ret_alg<T>::worker(ndata_ptr<T> data, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, const std::vector<net_bond_ptr<T>>& queue, int32_t group_begin, int32_t current, std::vector<int32_t> edges, std::vector<bool> visited, bool recursive) {
         net_bond_ptr<T> prev_bond = nullptr;
         T* prev_distance = nullptr;
         auto current_group_begin = group_begin;
 
 
-        if (current >= 0) {
-            if (try_to_add(data, ans, bundle, queue[current], edges, visited)) {
-                prev_bond = queue[current];
-            }
-            prev_distance = &queue[current]->distance();
-        }
+//        if (current >= 0) {
+//            if (try_to_add(data, ans, bundle, queue[current], edges, visited)) {
+//                prev_bond = queue[current];
+//            }
+//            prev_distance = &queue[current]->distance();
+//        }
 
-        auto start = group_begin == current ? group_begin + 1 : group_begin;
-        assert (start >= 0);
+//        auto start = group_begin == current ? group_begin + 1 : group_begin;
+//        assert (start >= 0);
 
         auto s = (int32_t) queue.size();
-        for (auto j = start; j < s; ++j) {
-            if (j == current) {
-                continue;
-            }
 
-            if (!prev_bond || !queue[j]->same(*prev_bond)) {
-                if (prev_distance == nullptr || queue[j]->distance() != *prev_distance) {
-                    current_group_begin = j;
+        std::vector<bool> queue_visited(queue.size(), false);
+
+        auto is_queue_visited_empty = [&queue_visited, &data]() {
+            return std::count(queue_visited.begin(), queue_visited.end(), true) == data->nodes_count() - 1;
+        };
+
+        while (!is_queue_visited_empty()) {
+            for (auto j = 0; j < s; ++j) {
+                if (!queue_visited[j] && try_to_add(data, ans, bundle, queue[j], edges, visited)) {
+//                    prev_bond = queue[j];
+                    queue_visited[j] = true;
+                    j = 0;
                 }
-                if (!recursive && (j == s - 1 || queue[j]->distance() == queue[j+1]->distance())) {
-                    while (j < s - 1 && queue[j]->distance() == queue[j+1]->distance()) {
-                        worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
-                        ++j;
-                    }
-                    if (j < s) {
-                        worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
-                    }
-                    ans->delete_bundle(bundle);
-                    break;
-                } else {
-                    if (try_to_add(data, ans, bundle, queue[j], edges, visited)) {
-                        prev_bond = queue[j];
-                    }
 
-                    if (j == s - 1 || queue[j]->distance() != queue[j+1]->distance()) {
-                        recursive = false;
-                    }
-                }
-                prev_distance = &queue[j]->distance();
             }
-
         }
+
+//        for (auto j = 0; j < s; ++j) {
+//            if (try_to_add(data, ans, bundle, queue[j], edges, visited)) {
+//                prev_bond = queue[j];
+//            }
+//            if (j == current) {
+//                continue;
+//            }
+//
+//            if (!prev_bond || !queue[j]->same(*prev_bond)) {
+//                if (prev_distance == nullptr || queue[j]->distance() != *prev_distance) {
+//                    current_group_begin = j;
+//                }
+//                if (!recursive && (j == s - 1 || queue[j]->distance() == queue[j+1]->distance())) {
+//                    while (j < s - 1 && queue[j]->distance() == queue[j+1]->distance()) {
+//                        worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
+//                        ++j;
+//                    }
+//                    if (j < s) {
+//                        worker(data, ans, ans->copy_bundle(bundle), queue, current_group_begin, j, edges, visited, true);
+//                    }
+//                    ans->delete_bundle(bundle);
+//                    break;
+//                } else {
+//                    if (try_to_add(data, ans, bundle, queue[j], edges, visited)) {
+//                        prev_bond = queue[j];
+//                    }
+//
+//                    if (j == s - 1 || queue[j]->distance() != queue[j+1]->distance()) {
+//                        recursive = false;
+//                    }
+//                }
+//                prev_distance = &queue[j]->distance();
+//            }
+
+//        }
     }
 
     template <typename T> inline
-    bool nearest_alg<T>::try_to_add(ndata_ptr<T> data, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, net_bond_ptr<T> bond, std::vector<int32_t>& edges, std::vector<bool>& visited) {
+    bool nearest_with_ret_alg<T>::try_to_add(ndata_ptr<T> data, answer_ptr<T> ans, typename answer<T>::bundle_t* bundle, net_bond_ptr<T> bond, std::vector<int32_t>& edges, std::vector<bool>& visited) {
         bool result = false;
         if (edges[0] == -1 && edges[1] == -1) {
             ans->add_bond(bundle, bond);

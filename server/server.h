@@ -4,7 +4,7 @@
 #include "nn_alg.h"
 #include "prim_euler_alg.h"
 #include "little_alg.h"
-#include "nearest_alg.h"
+#include "nearest_with_ret_alg.h"
 
 #include <Poco/Net/HTTPRequestHandlerFactory.h>
 #include <Poco/Net/HTTPRequestHandler.h>
@@ -49,7 +49,7 @@ namespace croutes_server {
                 new croutes::nn_alg<T>(),
                 new croutes::prim_euler_alg<T>(),
                 new croutes::little_alg<T>(),
-                new croutes::nearest_alg<T>(),
+                new croutes::nearest_with_ret_alg<T>(),
         };
 
         JSON::Object res;
