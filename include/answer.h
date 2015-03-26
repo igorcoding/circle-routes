@@ -130,61 +130,23 @@ namespace croutes {
 
     template <typename T> inline
     bool answer<T>::bundles_same(bundle_t* lhs, bundle_t* rhs) {
-        bool same = true;
+        bool found = false;
 
-        size_t j = 0;
-        auto& current = (*lhs)[j];
+        for (size_t i = 0; i < lhs->size(); ++i) {
+            for (size_t j = 0; j < rhs->size(); ++j) {
+                auto& bi = (*lhs)[i];
+                auto& bj = (*rhs)[j];
 
-        size_t found = rhs->size();
-        for (size_t i = 0; i < rhs->size(); ++i) {
-            auto& bond = (*rhs)[i];
-            if (current->same(*bond)) {
-                found = i;
-                break;
-            }
-        }
-
-        if (found < rhs->size()) {
-            size_t i = found;
-            if (i == rhs->size() - 1) {
-                i = 0;
-            } else {
-                ++i;
-            }
-
-            if (j == lhs->size() - 1) {
-                j = 0;
-            } else {
-                ++j;
-            }
-            for (; ; ) {
-                if (i == found) {
+                if (bi->same(*bj)) {
+                    found = true;
                     break;
                 }
-
-
-                if (!(*lhs)[j]->same(*(*rhs)[i])) {
-                    same = false;
-                    break;
-                }
-
-
-                if (i == rhs->size() - 1) {
-                    i = 0;
-                } else {
-                    ++i;
-                }
-                if (j == lhs->size() - 1) {
-                    j = 0;
-                } else {
-                    ++j;
-                }
             }
-
+            if (!found) {
+                return false;
+            }
         }
-
-        return same;
-
+        return true;
     }
 }
 

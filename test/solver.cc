@@ -12,8 +12,8 @@ void expirement(croutes::ndata_ptr<T> data) {
     croutes::algorithm<T>* algs[] = {
 //            new croutes::nn_alg<T>(),
 //            new croutes::prim_euler_alg<T>(),
-//            new croutes::little_alg<T>(),
-            new croutes::nearest_alg<T>()
+            new croutes::little_alg<T>(),
+//            new croutes::nearest_alg<T>()
     };
 
     for (auto& alg : algs) {
