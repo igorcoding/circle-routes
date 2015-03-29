@@ -108,6 +108,7 @@ namespace croutes {
 //                    prev_bond = queue[j];
                     queue_visited[j] = true;
                     j = 0;
+                    break;
                 }
 
             }
