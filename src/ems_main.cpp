@@ -8,7 +8,7 @@
 #include "../include/nearest_alg.h"
 #include "../include/ndata.h"
 
-#include "../include/picojson.h"
+#include "../libs/picojson/picojson.h"
 
 using namespace croutes;
 

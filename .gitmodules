@@ -1,3 +1,6 @@
 [submodule "rapidjson"]
 	path = libs/rapidjson
 	url = https://github.com/miloyip/rapidjson.git
+[submodule "picojson"]
+	path = libs/picojson
+	url = https://github.com/kazuho/picojson.git
