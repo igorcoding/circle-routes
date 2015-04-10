@@ -12,32 +12,36 @@
 
 using namespace croutes;
 
-ndata_ptr<double> read_json(const std::string& json) {
-    using namespace picojson;
+namespace croutes {
 
-    value v;
-    std::string err = parse(v, json);
-    if (!err.empty()) {
-       std::cerr << err << std::endl;
-       return nullptr;
-    }
+    template <typename T>
+    ndata_ptr<T> read_json(const std::string& json) {
+        using namespace picojson;
 
-    const value::object& obj = v.get<object>();
-
-    size_t size = (size_t) obj.at("size").get<double>();
-    array data = obj.at("arr").get<array>();
-
-    auto d = std::make_shared<ndata<double>>(size);
-    for (size_t i = 0; i < data.size(); ++i) {
-        const array& col = data.at(i).get<array>();
-
-        for (size_t j = 0; j < col.size(); ++j) {
-            double value = col.at(j).get<double>();
-            d->add_node((int32_t) i, (int32_t) j, value);
+        value v;
+        std::string err = parse(v, json);
+        if (!err.empty()) {
+           std::cerr << err << std::endl;
+           return nullptr;
         }
-    }
 
-    return d;
+        const value::object& obj = v.get<object>();
+
+        size_t size = (size_t) obj.at("size").get<double>();
+        array data = obj.at("arr").get<array>();
+
+        auto d = std::make_shared<ndata<T>>(size);
+        for (size_t i = 0; i < data.size(); ++i) {
+            const array& col = data.at(i).get<array>();
+
+            for (size_t j = 0; j < col.size(); ++j) {
+                T value = (T) col.at(j).get<double>();
+                d->add_node((int32_t) i, (int32_t) j, value);
+            }
+        }
+
+        return d;
+    }
 }
 
 extern "C" int sum (int a, int b) {
